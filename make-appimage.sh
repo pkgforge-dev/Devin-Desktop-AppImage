@@ -3,22 +3,14 @@
 set -eu
 
 ARCH=$(uname -m)
-VERSION=$(pacman -Q PACKAGENAME | awk '{print $2; exit}') # example command to get version of application here
-export ARCH VERSION
+export ARCH
 export OUTPATH=./dist
 export ADD_HOOKS="self-updater.hook"
 export UPINFO="gh-releases-zsync|${GITHUB_REPOSITORY%/*}|${GITHUB_REPOSITORY#*/}|latest|*$ARCH.AppImage.zsync"
-export ICON=PATH_OR_URL_TO_ICON
-export DESKTOP=PATH_OR_URL_TO_DESKTOP_ENTRY
 
-# Deploy dependencies
-quick-sharun /PATH/TO/BINARY_AND_LIBRARIES_HERE
+export ICON=./AppDir/share/pixmaps/devin-desktop.png
+export DESKTOP=./AppDir/share/applications/devin-desktop.desktop
 
-# Additional changes can be done in between here
-
-# Turn AppDir into AppImage
+quick-sharun ./AppDir/bin/* /usr/lib/libnss_nis.so* /usr/lib/libnsl.so* /usr/lib/libnss_mdns*_minimal.so*
 quick-sharun --make-appimage
-
-# Test the app for 12 seconds, if the test fails due to the app
-# having issues running in the CI use --simple-test instead
 quick-sharun --test ./dist/*.AppImage

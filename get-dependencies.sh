@@ -6,24 +6,36 @@ ARCH=$(uname -m)
 
 echo "Installing package dependencies..."
 echo "---------------------------------------------------------------"
-# pacman -Syu --noconfirm PACKAGESHERE
+pacman -Syu --noconfirm patchelf libnss_nis nss-mdns nss
 
 echo "Installing debloated packages..."
 echo "---------------------------------------------------------------"
 get-debloated-pkgs --add-common --prefer-nano
 
-# Comment this out if you need an AUR package
-#make-aur-package PACKAGENAME
+echo "Getting binary..."
+echo "---------------------------------------------------------------"
 
-# If the application needs to be manually built that has to be done down here
+case "$ARCH" in
+	x86_64)  farch=amd64;;
+	# aarch64) farch=arm64;;
+esac
 
-# if you also have to make nightly releases check for DEVEL_RELEASE = 1
-#
-# if [ "${DEVEL_RELEASE-}" = 1 ]; then
-# 	nightly build steps
-# else
-# 	regular build steps
-# fi
+BASE="https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt"
+read -r VERSION FILE < <(
+  curl -fsSL "$BASE/dists/stable/main/binary-$farch/Packages.gz" | gzip -dc | awk '
+    /^Version:/  {v=$2; sub(/-.*/, "", v)}
+    /^Filename:/ {print v, $2; exit}
+  '
+)
 
-# Note that when building manually, you want to output the version of the
-# application to a ~/version file and remove VERSION from make-appimage.sh
+curl -sSfL --retry 30 --retry-connrefused "$BASE/$FILE" -o /tmp/temp.deb
+echo "$VERSION" > ~/version
+
+echo "Preparing AppDir..."
+mkdir -p ./AppDir/
+bsdtar -xOf /tmp/temp.deb data.tar.xz | bsdtar -xf - --strip-components=2 -C ./AppDir/
+
+mv -f ./AppDir/share/devin-desktop/* ./AppDir/bin/
+rm -rf ./AppDir/share/devin-desktop
+
+rm -f ./AppDir/bin/bin
