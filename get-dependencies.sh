@@ -38,4 +38,4 @@ bsdtar -xOf /tmp/temp.deb data.tar.xz | bsdtar -xf - --strip-components=2 -C ./A
 mv -f ./AppDir/share/devin-desktop/* ./AppDir/bin/
 rm -rf ./AppDir/share/devin-desktop
 
-rm -f ./AppDir/bin/bin
+rm -rf ./AppDir/bin/bin
