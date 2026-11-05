@@ -32,7 +32,7 @@ curl -sSfL --retry 30 --retry-connrefused "$BASE/$FILE" -o /tmp/temp.deb
 echo "$VERSION" > ~/version
 
 echo "Preparing AppDir..."
-mkdir -p ./AppDir/
+mkdir -p ./AppDir/bin
 bsdtar -xOf /tmp/temp.deb data.tar.xz | bsdtar -xf - --strip-components=2 -C ./AppDir/
 
 mv -f ./AppDir/share/devin-desktop/* ./AppDir/bin/
